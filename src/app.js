@@ -1,32 +1,34 @@
 const express = require('express');
+const connectDb = require('./config/database');
+const User = require('./models/user');
 const app = express();
 
+app.use(express.json()); // to parse JSON body
 
-app.use("/admin", (req,res,next) =>{
-    const token = "xyz";
-    const authValid = token === "xyzwwww";
-    if (!authValid){
-        res.status(401).send("Unauthorized");
+app.post("/signup", async (req, res) => {
+    try {
+        const user = new User({
+            firstName: "Virat",
+            lastName: "Kohli",
+            emailId: "ViratKohli@gmaiil.com",
+            Password: "IPL2025"
+        });
+
+        await user.save();
+        res.status(201).json({ message: "User created successfully", user });
+    } catch (err) {
+        res.status(500).json({ error: "User creation failed", details: err.message });
     }
-    else{
-        next();
-    }
-    
 });
 
-app.use("/admin/getapp", (req,res,next)=>{
-    res.send("getaapppp");
-    next();
-})
-
-app.use("/admin/getIsak", (req,res,next)=>{
-    res.send("get ISak");
-    next();
-})
-app.use("/admin/ssss", (req,res)=>{
-    res.send("getaappsssssssspp");
-
-})
-app.listen(3000,()=>{
-    console.log("Server is listening on port 3000");
-});
+connectDb()
+    .then(() => {
+        console.log("Database connected successfully");
+        app.listen(3000, () => {
+            console.log("Server is listening on port 3000");
+        });
+    })
+    .catch((err) => {
+        console.log("Database could not be connected");
+        console.error(err);
+    });
